@@ -6,9 +6,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.fundamentalcompose2.ActiveMainScreen
-import com.example.fundamentalcompose2.ui.ActiveEventScreen
 import com.example.fundamentalcompose2.ui.AllActiveMainScreen
-import com.example.fundamentalcompose2.ui.EventScreen
+import com.example.fundamentalcompose2.ui.DetailScreen
 
 @Composable
 fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) {
@@ -22,6 +21,10 @@ fun AppNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
         }
         composable(Routes.EventScreen.route) {
             AllActiveMainScreen(Modifier, navController)
+        }
+        composable(Routes.DetailScreen.route + "/{id}") { backStackEntry ->
+            val id = backStackEntry.arguments?.getString("id")?.toIntOrNull()
+            DetailScreen(navController = navController,id = id!!)
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.example.fundamentalcompose2.component
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,16 +15,13 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SearchBar
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.material3.SearchBar
-import androidx.compose.material3.SearchBarColors
-import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -34,15 +32,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.fundamentalcompose2.ResultState
 import com.example.fundamentalcompose2.data.response.ResponseEvents
+import com.example.fundamentalcompose2.model.Routes
 import com.example.fundamentalcompose2.ui.EventAllItem
 import com.example.fundamentalcompose2.viewmodel.SearchViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchBar(viewModel: SearchViewModel = hiltViewModel()) {
+fun SearchBar(
+    viewModel: SearchViewModel = hiltViewModel(), modifier: Modifier = Modifier,
+    navController: NavController
+) {
     val lifecycleOwner = LocalLifecycleOwner.current
     var searchResult by remember {
         mutableStateOf<ResultState<ResponseEvents>?>(null)
@@ -54,15 +57,13 @@ fun SearchBar(viewModel: SearchViewModel = hiltViewModel()) {
 
     val searchText by viewModel.searchText.collectAsState()
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-        modifier = Modifier.padding(top = 32.dp, start = 32.dp, end = 32.dp, bottom = 16.dp)
+        horizontalAlignment = Alignment.Start,
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        modifier = modifier
+
     ) {
         SearchBar(
-            colors = SearchBarDefaults.colors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                dividerColor = MaterialTheme.colorScheme.surfaceContainer,
-            ),
+            colors = SearchBarDefaults.colors(),
             leadingIcon = { Icon(imageVector = Icons.Default.Person, contentDescription = null) },
             trailingIcon = { Icon(imageVector = Icons.Default.Search, contentDescription = null) },
             placeholder = { Text(text = "Search...") },
@@ -79,49 +80,43 @@ fun SearchBar(viewModel: SearchViewModel = hiltViewModel()) {
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color.Transparent)
+                .padding(start = 16.dp, end = 16.dp)
         ) {
             when (val result = searchResult) {
                 is ResultState.Loading -> {
-                    Column (
+                    Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center,
                         modifier = Modifier.fillMaxSize()
-                    ){
+                    ) {
                         CircularProgressIndicator()
                     }
                 }
 
                 is ResultState.Success -> {
                     if (result.data.listEvents.isEmpty()) {
-                        Column (
+                        Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center,
                             modifier = Modifier.fillMaxSize()
-                        ){
-                            Text(text = "Not Found", fontWeight = FontWeight.Bold)
+                        ) {
+                            Text(text = "", fontWeight = FontWeight.Bold)
                         }
                         return@SearchBar
                     }
                     val events = (result).data
-                    val navController = rememberNavController()
-                    Scaffold(
-                        bottomBar = { BottomBar(navController = navController) },
-                    ) {
-                        Column(
+                    Column() {
+                        LazyColumn(
                             modifier = Modifier
-                                .padding(it)
+                                .background(Color.Transparent)
                         ) {
-                            LazyColumn(
-                                modifier = Modifier
-                                    .background(Color.Transparent)
-                            ) {
-                                items(events.listEvents) { event ->
-                                    EventAllItem(event)
-                                }
+                            items(events.listEvents) { event ->
+                                EventAllItem(event, modifier = modifier.clickable {
+                                    navController.navigate(Routes.DetailScreen.route + "/${event.id}")
+                                })
                             }
-
                         }
+
                     }
                 }
 
@@ -130,15 +125,18 @@ fun SearchBar(viewModel: SearchViewModel = hiltViewModel()) {
                 }
 
                 else -> {
-                    Text(text = "Not Found")
+                    Text(text = "")
                 }
             }
         }
     }
+
 }
+
 
 @Preview(showBackground = true)
 @Composable
 fun SearchBarPreview() {
-    SearchBar()
+    val navController = rememberNavController()
+    SearchBar(navController = navController)
 }

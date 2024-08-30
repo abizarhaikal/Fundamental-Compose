@@ -3,6 +3,7 @@ package com.example.fundamentalcompose2.data.domain
 import com.example.fundamentalcompose2.ResultState
 import com.example.fundamentalcompose2.data.domain.repository.Repository
 import com.example.fundamentalcompose2.data.remote.ApiService
+import com.example.fundamentalcompose2.data.response.ResponseDetail
 import com.example.fundamentalcompose2.data.response.ResponseEvents
 
 class RepositoryImpl(
@@ -26,7 +27,7 @@ class RepositoryImpl(
             val responseAllEvents = api.getAllEvents()
             if (responseAllEvents.isSuccessful && responseAllEvents.body() != null) {
                 ResultState.Success(responseAllEvents.body()!!)
-            }else {
+            } else {
                 ResultState.Error(responseAllEvents.body()?.error.toString())
             }
         } catch (e: Exception) {
@@ -47,4 +48,42 @@ class RepositoryImpl(
         }
     }
 
+    override suspend fun getEventDetail(id: Int): ResultState<ResponseDetail> {
+        return try {
+            val responseDetail = api.getEventDetail(id = id)
+            if (responseDetail.isSuccessful && responseDetail.body() != null) {
+                ResultState.Success(responseDetail.body()!!)
+            } else {
+                ResultState.Error(responseDetail.body()?.error.toString())
+            }
+        } catch (e: Exception) {
+            ResultState.Error(e.message.toString())
+        }
+    }
+
+    override suspend fun getEventRandom(): ResultState<ResponseEvents> {
+        return try {
+            val responseNotification = api.getEventRandom()
+            if (responseNotification.isSuccessful && responseNotification.body() != null) {
+                ResultState.Success(responseNotification.body()!!)
+            } else {
+                ResultState.Error(responseNotification.body()?.error.toString())
+            }
+        } catch (e: Exception) {
+            ResultState.Error(e.message.toString())
+        }
+    }
+
+    override suspend fun getEventPast(): ResultState<ResponseEvents> {
+        return try {
+            val responsePast = api.getEventPast()
+            if (responsePast.isSuccessful && responsePast.body() != null) {
+                ResultState.Success(responsePast.body()!!)
+            } else {
+                ResultState.Error(responsePast.body()?.error.toString())
+            }
+        } catch (e: Exception) {
+            ResultState.Error(e.message.toString())
+        }
+    }
 }

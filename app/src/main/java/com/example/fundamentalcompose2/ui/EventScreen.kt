@@ -1,11 +1,11 @@
 package com.example.fundamentalcompose2.ui
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -24,7 +24,6 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -35,6 +34,7 @@ import com.example.fundamentalcompose2.ResultState
 import com.example.fundamentalcompose2.component.BottomBar
 import com.example.fundamentalcompose2.component.SearchBar
 import com.example.fundamentalcompose2.data.response.ListEventsItem
+import com.example.fundamentalcompose2.model.Routes
 import com.example.fundamentalcompose2.viewmodel.AllEventViewModel
 
 
@@ -44,22 +44,23 @@ fun AllActiveMainScreen(modifier: Modifier = Modifier, navController: NavControl
         bottomBar = {
             BottomBar(navController = navController)
         },
-        topBar = {
-            SearchBar()
-        }
-    ) {
+
+        ) {
         Column(
             modifier = modifier.padding(it)
         ) {
-            EventScreen()
-
+            SearchBar(modifier = modifier.padding(bottom = 8.dp), navController = navController)
+            EventScreen(navController = navController)
         }
     }
-
 }
 
 @Composable
-fun EventScreen(viewModel: AllEventViewModel = hiltViewModel(), modifier: Modifier = Modifier) {
+fun EventScreen(
+    viewModel: AllEventViewModel = hiltViewModel(),
+    modifier: Modifier = Modifier,
+    navController: NavController
+) {
     val resultState by viewModel.allEvents.observeAsState(ResultState.Loading)
 
     LaunchedEffect(key1 = Unit) {
@@ -68,12 +69,13 @@ fun EventScreen(viewModel: AllEventViewModel = hiltViewModel(), modifier: Modifi
 
     when (resultState) {
         is ResultState.Loading -> {
-            Column (
-                horizontalAlignment =  Alignment.CenterHorizontally,
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
                 modifier = modifier
-                    .fillMaxSize()
-            ){
+                    .fillMaxWidth()
+                    .fillMaxHeight()
+            ) {
                 CircularProgressIndicator(
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -84,7 +86,9 @@ fun EventScreen(viewModel: AllEventViewModel = hiltViewModel(), modifier: Modifi
             val events = (resultState as ResultState.Success).data
             LazyColumn {
                 items(events.listEvents) { event ->
-                    EventAllItem(event)
+                    EventAllItem(event, modifier = modifier.clickable {
+                        navController.navigate(Routes.DetailScreen.route + "/${event.id}")
+                    })
                 }
             }
         }
@@ -95,12 +99,16 @@ fun EventScreen(viewModel: AllEventViewModel = hiltViewModel(), modifier: Modifi
         }
     }
 }
+
 @Composable
 fun EventAllItem(data: ListEventsItem, modifier: Modifier = Modifier) {
     ElevatedCard(
         elevation = CardDefaults.cardElevation(),
         shape = Shapes().medium,
-        colors = CardDefaults.cardColors(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.onPrimary,
+            contentColor = MaterialTheme.colorScheme.secondary
+        ),
         modifier = modifier
             .padding(8.dp)
             .shadow(4.dp)

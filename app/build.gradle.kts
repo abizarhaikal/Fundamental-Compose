@@ -86,8 +86,11 @@ dependencies {
 
     implementation("io.coil-kt:coil-compose:2.0.0")
 
+    implementation("com.google.accompanist:accompanist-permissions:0.31.1-alpha")
+
     implementation("com.google.accompanist:accompanist-glide:0.15.0")
 }
+
 
 kapt {
     correctErrorTypes = true
